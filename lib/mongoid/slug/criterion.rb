@@ -15,17 +15,9 @@ module Mongoid::Slug::Criterion
     rescue BSON::InvalidObjectId
       # slug
       if ids.size > 1
-        if @klass.slug_history_name
-          any_of({ @klass.slug_name.to_sym.in => ids }, { @klass.slug_history_name.to_sym.in => ids })
-        else
-          where(@klass.slug_name.to_sym.in => ids)
-        end
+        where(@klass._slug.name.to_sym.in => ids)
       else
-        if @klass.slug_history_name
-          any_of({@klass.slug_name => ids.first}, {@klass.slug_history_name => ids.first})
-        else
-          where(@klass.slug_name => ids.first)
-        end
+        where(@klass._slug.name => ids.first)
       end
     end
   end
