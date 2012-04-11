@@ -31,11 +31,11 @@ module Mongoid
         end
 
         it 'aliases new name to slug' do
-          Book.instance_methods.should include :slug
+          Book.instance_methods.map(&:to_sym).should include :slug
         end
 
         it 'aliases attribute methods to slug' do
-          Book.instance_methods.should include :slug_was
+          Book.instance_methods.map(&:to_sym).should include :slug_was
         end
 
         it 'defines a finder' do
