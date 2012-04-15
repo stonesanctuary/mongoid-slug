@@ -65,7 +65,7 @@ module Mongoid
         # Deprecated: Define dynamic scope.
         scope "by_#{_slug.name}", lambda { |slug|
           ActiveSupport::Deprecation.warn \
-            "find_by_#{_slug.name} is deprecated (use find instead)"
+            "by_#{_slug.name} is deprecated (use find instead)"
 
           where(_slug.name => slug)
         }
@@ -73,7 +73,10 @@ module Mongoid
         # Deprecated: Define dynamic finders.
         instance_eval <<-EOF
           def self.find_by_#{_slug.name}(slug)
-            by_#{_slug.name}(slug).first
+            ActiveSupport::Deprecation.warn \
+              'find_by_#{_slug.name} is deprecated (use find instead)'
+
+            where(_slug.name => slug).first
           end
 
           def self.find_by_#{_slug.name}!(slug)
