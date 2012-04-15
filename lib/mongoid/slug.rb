@@ -90,10 +90,19 @@ module Mongoid
     #
     # Returns nothing.
     def build_slug
-      if _slug.has_history?
-        slug.push(find_unique_slug).uniq!
-      else
-        self.slug = [find_unique_slug]
+      self.slug = [] unless _slug.has_history?
+      slug.push(find_unique_slug).uniq!
+    end
+
+    # Internal: Finds a unique slug by calling the slug builder unless a slug
+    # was manually specified.
+    def find_unique_slug
+      find_unique_slug_for begin
+        if slug.present? && (new_record? || slug_changed?)
+          slug
+        else
+          _slug.builder.call self
+        end
       end
     end
 
@@ -147,25 +156,18 @@ module Mongoid
 
     # Returns a String that Action Pack uses to construct an URL to the record.
     def to_param
-      slug.try(:first) || begin
-        # Build a slug if one is missing.
+      case slug
+      # Build slug if missing.
+      when []
         build_slug
         save
-
-        slug
+      # Wrap deprecated String slugs.
+      when String
+        self.slug = [slug]
+        save
       end
-    end
 
-    private
-
-    def find_unique_slug
-      find_unique_slug_for begin
-        if new_record? ? slug.present? : slug_changed?
-          slug
-        else
-          _slug.builder.call self
-        end
-      end
+      slug.first
     end
   end
 end

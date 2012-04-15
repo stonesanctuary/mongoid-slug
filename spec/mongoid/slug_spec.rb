@@ -175,16 +175,16 @@ module Mongoid
         end
 
         it 'overwrites existing slugs' do
-          book.stub!(:find_unique_slug).and_return('bar')
+          book.stub!(:find_unique_slug).and_return 'bar'
           book.build_slug
           book.slug.should eql ['bar']
         end
 
-        it 'does not overwrite an existing slug' do
-          book.stub!(:find_unique_slug).and_return('foo')
+        it 'does not duplicate an existing slug' do
+          book.stub!(:find_unique_slug).and_return 'foo'
           book.save
           book.build_slug
-          book.should_not be_slug_changed
+          book.slug.should =~ ['foo']
         end
       end
 
@@ -194,16 +194,40 @@ module Mongoid
         end
 
         it 'appends to existing slugs' do
-          book.stub!(:find_unique_slug).and_return('bar')
+          book.stub!(:find_unique_slug).and_return 'bar'
           book.build_slug
           book.slug.should eq ['foo', 'bar']
         end
 
         it 'does not duplicate an existing slug' do
-          book.stub!(:find_unique_slug).and_return('foo')
+          book.stub!(:find_unique_slug).and_return 'foo'
           book.save
           book.build_slug
-          book.should_not be_slug_changed
+          book.slug.should =~ ['foo']
+        end
+      end
+
+      context 'given a deprecated slug' do
+        before do
+          Book.slug :title
+        end
+
+        let(:book) do
+          Book.collection.insert 'title' => 'Foo', 'slug' => 'foo'
+          Book.first
+        end
+
+        it 'overwrites existing slugs' do
+          book.stub!(:find_unique_slug).and_return 'bar'
+          book.build_slug
+          book.slug.should eql ['bar']
+        end
+
+        it 'does not duplicate an existing slug' do
+          book.stub!(:find_unique_slug).and_return 'foo'
+          book.save
+          book.build_slug
+          book.slug.should =~ ['foo']
         end
       end
     end
@@ -314,6 +338,36 @@ module Mongoid
 
         it 'ignores current slug of document' do
           author.find_unique_slug_for('Foo').should eql 'foo'
+        end
+      end
+    end
+
+    describe '#to_param' do
+      before do
+        Book.slug :title
+      end
+
+      context 'when slug is missing' do
+        let!(:book) do
+          Book.collection.insert 'title' => 'Foo'
+          Book.first
+        end
+
+        it 'creates the slug' do
+          book.to_param
+          book.reload.slug.should eql ['foo']
+        end
+      end
+
+      context 'when slug is a String' do
+        let!(:book) do
+          Book.collection.insert 'title' => 'Foo', 'slug' => 'foo'
+          Book.first
+        end
+
+        it 'wraps the slug in an Array' do
+          book.to_param
+          book.reload.slug.should eql ['foo']
         end
       end
     end
