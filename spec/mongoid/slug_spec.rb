@@ -12,6 +12,10 @@ module Mongoid
           Book.fields.should have_key Slug::Config::NAME
         end
 
+        it 'defines a scope' do
+          Book.should respond_to :by_slug
+        end
+
         it 'defines a finder' do
           Book.should respond_to :find_by_slug
         end
@@ -36,6 +40,10 @@ module Mongoid
 
         it 'aliases attribute methods to slug' do
           Book.instance_methods.map(&:to_sym).should include :slug_was
+        end
+
+        it 'defines a scope' do
+          Book.should respond_to "by_#{name}"
         end
 
         it 'defines a finder' do
@@ -76,6 +84,32 @@ module Mongoid
             Book.index_information['slug_1_publisher_1']['unique'].should be_true
           end
         end
+      end
+    end
+
+    describe '.by_slug' do
+      before do
+        ActiveSupport::Deprecation.silenced = true
+        Book.slug :title
+      end
+
+      after do
+        ActiveSupport::Deprecation.silenced = false
+      end
+
+      context 'when a match exists' do
+        let!(:book) do
+          Book.create :title => 'foo'
+        end
+
+        it 'returns a criteria' do
+          Book.by_slug('foo').should be_a Mongoid::Criteria
+        end
+      end
+
+      it 'outputs a deprecation notice' do
+        ActiveSupport::Deprecation.should_receive :warn
+        Book.by_slug 'foo'
       end
     end
 
