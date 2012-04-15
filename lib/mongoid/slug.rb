@@ -117,13 +117,7 @@ module Mongoid
       # Regular expression that matches slug, slug-1,... slug-n.
       pattern = /^#{Regexp.escape(new_slug)}(?:-(\d+))?$/
 
-      dups = Uniqueness::Scope.new(self).
-        build.
-        only(_slug.name).
-        where(:_id.ne               => _id).
-        where(_slug.name.to_sym.all => [pattern]).
-        map(&:slug).
-        flatten
+      dups = Uniqueness::Scope.new(self).find_slugs pattern
 
       # Do not allow BSON::ObjectIds or reserved words as slugs.
       dups << new_slug if BSON::ObjectId.legal?(new_slug) ||
