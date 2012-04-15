@@ -6,7 +6,7 @@ module Mongoid
       #
       # It concatenates the values of the slugged fields.
       BUILDER = lambda do |doc|
-        doc._slug.fields.map { |f| doc.send f }.join ' '
+        doc._slug.fields.map { |f| doc.read_attribute f }.join ' '
       end
 
       # The default name of the field that stores the slug.
