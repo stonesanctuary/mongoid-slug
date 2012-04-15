@@ -85,6 +85,31 @@ module Mongoid
           end
         end
       end
+
+      context 'when last insert includes a deprecated history field' do
+        before do
+          Book.collection.insert 'title' => 'Foo',
+                                 'slug' => 'foo',
+                                 'slug_history' => ['bar']
+        end
+
+        context 'with history' do
+          it 'raises a Deprecated Field error' do
+            pending
+            expect do
+              Book.slug :title, :history => true
+            end.to raise_error Slug::DeprecatedField
+          end
+        end
+
+        context 'without history' do
+          it 'does not raise any error' do
+            expect do
+              Book.slug :title
+            end.not_to raise_error
+          end
+        end
+      end
     end
 
     describe '.by_slug' do
