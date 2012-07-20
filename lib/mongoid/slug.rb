@@ -172,9 +172,9 @@ module Mongoid
       # Build a finder for slug
       def find_by_slug(_slug)
         if _slug.instance_of?(Array)
-          where (:_slugs.in => _slug)
+          where( :_slugs.in => _slug )
         else
-          where (:_slugs => slug).first
+          where( :_slugs => _slug ).first
         end
       end
       
