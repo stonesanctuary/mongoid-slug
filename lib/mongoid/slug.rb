@@ -169,6 +169,20 @@ module Mongoid
         _slug
       end
 
+      # Build a finder for slug
+      def find_by_slug(_slug)
+        if _slug.instance_of?(Array)
+          where (:_slugs.in => _slug)
+        else
+          where (:_slugs => slug).first
+        end
+      end
+      
+      def find_by_slug!(_slug)
+        find_by_slug(_slug) ||
+          raise(Mongoid:Errors::DocumentNotFound.new welf, _slug)
+      end
+      
       private
 
       def uniqueness_scope(model = nil)
