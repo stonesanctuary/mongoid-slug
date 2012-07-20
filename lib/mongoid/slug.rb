@@ -180,7 +180,7 @@ module Mongoid
       
       def find_by_slug!(_slug)
         find_by_slug(_slug) ||
-          raise(Mongoid:Errors::DocumentNotFound.new welf, _slug)
+          raise(Mongoid::Errors::DocumentNotFound.new self, _slug)
       end
       
       private
